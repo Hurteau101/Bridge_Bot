@@ -8,12 +8,12 @@ import os
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 API_KEY = os.getenv("API_KEY")
-ALLOWED_CHANNEL_ID = os.getenv("ALLOWED_CHANNEL_ID")
+ALLOWED_CHANNEL_IDS = os.getenv("ALLOWED_CHANNEL_IDS")
 ERROR_BOT_WEBHOOK = os.getenv("ERROR_BOT_WEBHOOK")
 
 BASE_URL = "https://externalapi.pikkit.com/v1/quickpick"
 
-if not all([TOKEN, API_KEY, ALLOWED_CHANNEL_ID, ERROR_BOT_WEBHOOK]):
+if not all([TOKEN, API_KEY, ALLOWED_CHANNEL_IDS, ERROR_BOT_WEBHOOK]):
     raise Exception("Missing environment variables")
 
 
@@ -150,7 +150,12 @@ async def on_thread_create(thread: discord.Thread):
 
     channel_id = thread.parent.id
 
-    if channel_id != int(ALLOWED_CHANNEL_ID) or thread.id in active_requests:
+    channel_ids = [
+        int(channel_id)
+        for channel_id in ALLOWED_CHANNEL_IDS.split(',')
+    ]
+
+    if channel_id not in channel_ids or thread.id in active_requests:
         return
 
     active_requests.add(thread.id)
@@ -183,7 +188,7 @@ async def on_thread_create(thread: discord.Thread):
     if not request_id:
         await remove_placeholder(placeholder)
         await thread.send("Error Generating QuickPick Link")
-        await send_error_notification("No request ID returned from API\n\n" 
+        await send_error_notification("No request ID returned from API\n\n"
                                       f"**Text**\n```{thread_text}```\n"
                                       f"**Images**\n" + "\n".join(images), session, thread.id)
         return
