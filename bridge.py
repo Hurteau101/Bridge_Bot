@@ -119,7 +119,7 @@ async def handle_polling(thread, request_id, session, placeholder):
     link = await poll_status(request_id, session)
     if link.get("status") != "success":
         await remove_placeholder(placeholder)
-        await thread.send("Error generating QuickPick Link")
+        await thread.send("Error Generating QuickPick Link")
         await send_error_notification(link.get("message"), session, thread.id)
         return
 
@@ -155,8 +155,6 @@ async def on_thread_create(thread: discord.Thread):
 
     active_requests.add(thread.id)
 
-    print("Passed Condition Check!")
-
     await asyncio.sleep(1)
 
     try:
@@ -172,19 +170,19 @@ async def on_thread_create(thread: discord.Thread):
         for attachment in parent_message.attachments
     ]
 
-    placeholder = await thread.send("Generating QuickPick Link...")
+    placeholder = await thread.send("Generating QuickPick Link. Please wait..")
 
     try:
         request_id = await create_betslip(thread_text, images, session)
     except Exception as e:
         await remove_placeholder(placeholder)
-        await thread.send("Error generating QuickPick Link")
+        await thread.send("Error Generating QuickPick Link")
         await send_error_notification(str(e), session, thread.id)
         return
 
     if not request_id:
         await remove_placeholder(placeholder)
-        await thread.send("Error generating QuickPick Link")
+        await thread.send("Error Generating QuickPick Link")
         await send_error_notification("No request ID returned from API\n\n" 
                                       f"**Text**\n```{thread_text}```\n"
                                       f"**Images**\n" + "\n".join(images), session, thread.id)
