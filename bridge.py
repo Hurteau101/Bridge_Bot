@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timezone
 import aiohttp
 import discord
+from discord.errors import HTTPException
 from dotenv import load_dotenv
 import os
 
@@ -137,8 +138,12 @@ async def handle_polling(thread, request_id, session, placeholder):
 async def remove_placeholder(placeholder):
     try:
         await placeholder.delete()
-    except discord.NotFound:
-        return
+    except HTTPException as e:
+        if e.code == 50083:
+            print("Thread archived, skipping delete.")
+            return
+    except Exception as e:
+        print(e)
 
 
 @bot.event
