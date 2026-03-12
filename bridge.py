@@ -116,6 +116,26 @@ async def poll_status(request_id: str, session: aiohttp.ClientSession) -> dict:
     return {"status": "error", "message": "Timeout"}
 
 
+async def safe_send(channel, content, retries=5):
+    for attempt in range(retries):
+        try:
+            return await channel.send(content)
+
+        except discord.DiscordServerError:
+            if attempt == retries - 1:
+                raise
+            await asyncio.sleep(2)
+
+        except discord.HTTPException as e:
+            if e.status >= 500:
+                if attempt == retries - 1:
+                    raise
+                await asyncio.sleep(2)
+            else:
+                raise
+
+    raise RuntimeError("safe_send failed after retries")
+
 async def handle_polling(thread, request_id, session, placeholder):
     link = await poll_status(request_id, session)
     if link.get("status") != "success":
@@ -180,7 +200,7 @@ async def on_thread_create(thread: discord.Thread):
         for attachment in parent_message.attachments
     ]
 
-    placeholder = await thread.send("Generating QuickPick Link. Please wait..")
+    placeholder = await safe_send(thread, "Generating QuickPick Link. Please wait..")
 
     try:
         request_id = await create_betslip(thread_text, images, session)
