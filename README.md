@@ -1,6 +1,6 @@
 # Bridge Bot
 
-A Discord bot that integrates with the QuickPick API. Built for a client to automatically generate QuickPick links from bet slip images and post them into the corresponding Discord thread.
+A Discord bot that integrates with the QuickPick API. Built for a client to automatically generate QuickPick links from bet slip images or bet slip text and post them into the corresponding Discord thread.
 
 ## Overview
 
